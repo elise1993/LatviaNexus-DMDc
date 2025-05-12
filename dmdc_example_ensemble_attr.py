@@ -86,7 +86,7 @@ data_test = data_test.set_index('date')
 # data_test = data_test.iloc[229:,:]
 
 
-# The SDM outputs data at monthly resolution constant-interpolated to monthy.
+# The SDM outputs data at annual resolution constant-interpolated to monthly.
 # So here we resample it back to annual data
 data_train_val = data_train_val.resample('YE').first()
 data_test = data_test.resample('YE').first()
