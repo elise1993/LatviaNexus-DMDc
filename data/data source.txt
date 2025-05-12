@@ -1,0 +1,1 @@
+This data was generated using the STELLA-based system dynamics model in Sušnik et. al. (2021) "System dynamics modelling to explore the impacts of policies on the water-energy-food-land-climate nexus in Latvia" https://www.sciencedirect.com/science/article/abs/pii/S0048969721008949
