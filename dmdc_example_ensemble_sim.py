@@ -7,7 +7,7 @@ policy = "P4"
 
 
 # options (True/False)
-use_filter = True
+use_filter = False
 optimize_feature_selection = True
 descending_feature_selection = True
 reduced_dataset = False
@@ -18,9 +18,9 @@ reduced_matrices = False
 # hyperparameters
 n_ensemble = 5
 n_folds = 3
-k_best = 100
+k_best = 300
 penalty = 0
-n_trials = 5
+n_trials = 500
 interpolate = None # 'D' (daily), 'ME' (monthly), None (annual)
 interpolate_method = 'linear' # 'linear', 'cubic', 'akima', etc.
 score_func = 'NSE' # 'NSE', 'RMSE', 'MAE', 'MAPE'
@@ -80,8 +80,8 @@ data = data.set_index('date')
 
 
 
-# SDM outputs data at monthly resolution constant-interpolated to monthy. So
-# here we resample it back to annual data
+# The SDM outputs data at annual resolution constant-interpolated to monthly.
+# So here we resample it back to annual data
 if policy != "test":
     data = data.resample('YE').first()
 
