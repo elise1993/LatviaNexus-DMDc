@@ -17,11 +17,11 @@ reduced_matrices = False
 
 
 # hyperparameters
-n_ensemble = 1
+n_ensemble = 5
 n_folds = 3
 k_best = 500
 penalty = 0
-n_trials = 200
+n_trials = 500
 interpolate = None # 'D' (daily), 'ME' (monthly), None (annual)
 interpolate_method = 'linear' # 'linear', 'cubic', 'akima', etc.
 score_func = 'NSE' # 'NSE', 'RMSE', 'MAE', 'MAPE'
