@@ -6,3 +6,5 @@ Data is based on the STELLA-based system dynamics model in Sušnik et. al. (2021
 Attribution and projection studies can be performed using the templates `dmdc_example_ensemble_attr.py` and `dmdc_example_ensemble_proj.py`, respectively.
 
 The file `environment.yml` can be used to create a reproducible environment using e.g., Conda: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+
+![image](https://github.com/user-attachments/assets/07e80fba-f2e4-40af-a024-402cf6d92607)
