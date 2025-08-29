@@ -2,37 +2,39 @@
 from initialize import *
 
 # policy datasets to train/validate and test on
-# dataset options: P0, P3/4, P5, P11/12, P19
+# dataset options: P0, P3, P4, P5, P11, P12, P18, P19 [Note: P5 has unspecified control vars]
 policy_train = "P19"
 policy_test = "P0"
 
 
 # options (True/False)
-use_filter = False
-optimize_feature_selection = True
-descending_feature_selection = True
-reduced_dataset = False
-weighted_accuracy = False
-reduced_matrices = False
+optimize_feature_selection = True   # Bayesian optimization (default: True)
+descending_feature_selection = True # Start optimization with all features enabled (default: True)
+use_filter = False                  # Filter variables using mutual info regression (default: True)
+reduced_matrices = False            # Speed up computational time (default: True)
+reduced_dataset = False             # Testing. Apply DMDc on reduced dataset (default: True)
+weighted_accuracy = False           # Testing. Apply weights to objective function. Prioritize areas with high control change (default: True)
 
 
 # hyperparameters
-n_ensemble = 5
-n_folds = 3
-k_best = 500
-penalty = 0
-n_trials = 500
-interpolate = None # 'D' (daily), 'ME' (monthly), None (annual)
-interpolate_method = 'linear' # 'linear', 'cubic', 'akima', etc.
-score_func = 'NSE' # 'NSE', 'RMSE', 'MAE', 'MAPE'
-nc = 15 # 5 or 15 or 30 (for P19 only)
+n_ensemble = 30                     # no. of optimizations to average (default: 30)
+n_trials = 200                      # no. of trials per optimization (default: 200)
+penalty = 0                         # penalize large no. of features in optimization (default: 0)
+n_folds = 3                         # no. of cross-validation folds (default: 3)
+k_best = 500                        # no. of variables to filter with mutual info regression (default: 500)
 
 
-# DMDc svd-ranks to try out
-# (r_min has to be 1 if descending_feature_selection=False) (rtilde should >= r)
-r_min, r_max = 5,15
-rtilde_min, rtilde_max = r_min, r_max
+interpolate = 'ME'                  # 'D' (daily), 'ME' (monthly), None (annual)
+interpolate_method = 'linear'       # 'linear', 'cubic', 'akima', etc.
+score_func = 'NSE'                  # 'NSE', 'RMSE', 'MAE', 'MAPE' (RMSE/MAE/MAPE currently deprecated)
+nc = 15                             # no. of control variables: 5 or 15 (or 30 for P19)
 
+
+
+r_min, r_max = 5, 15                    # svd-ranks for input matrix to try out (default: 5, 15)
+rtilde_min, rtilde_max = r_min, r_max   # svd-ranks for response matrix (default: r_min, r_max)
+
+# note: r_min has to be 1 if descending_feature_selection=False
 
 # %% ------------------------- DATA-PREPROCESSING ------------------------ %% #
 
@@ -48,7 +50,7 @@ m, n_total = data_test.shape
 
 # the control variables for each policy are specified in a separate file:
 control_names, important_names, geo_vars, all_feature_names = specify_control_vars(
-    policy_train, reduced_dataset, all_feature_names, nc)
+    policy_train, policy_test, reduced_dataset, all_feature_names, nc)
 
 
 # manually visualize how a variable changes with policy
@@ -252,6 +254,9 @@ perf_test_mean = np.zeros(n_ensemble)
 eigvec_important = np.empty((ni, n_ensemble))
 feature_names_opt = []
 
+# not possible with varying n
+# X_train_pred_mean = np.zeros((m_train, ni, n_ensemble))
+# X_test_pred_mean = np.zeros((m_test, ni, n_ensemble))
 
 # run optimization multiple times for ensemble
 for ensemble in range(n_ensemble):
@@ -352,6 +357,9 @@ for ensemble in range(n_ensemble):
     perf_train = NSE(true=X_train, pred=X_train_pred)
     perf_test = NSE(true=X_test, pred=X_test_pred)
     
+    # mean forecast (not possible with varying n; choose all common vars?)
+    # X_train_pred_mean += X_train_pred
+    # X_test_pred_mean += X_test_pred
     
     # ensemble forecasts of important variables
     pred_train[:,:,ensemble] = X_train_pred[important_names]
@@ -369,7 +377,7 @@ for ensemble in range(n_ensemble):
     perf_train_mean[ensemble] = np.median(np.ma.masked_invalid(perf_train).filled(0))
     perf_test_mean[ensemble] =  np.median(np.ma.masked_invalid(perf_test).filled(0))
     
-    
+
 # %% ----------------------------- PLOTTING ------------------------------ %% #
 
 

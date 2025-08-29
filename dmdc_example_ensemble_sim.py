@@ -2,39 +2,40 @@
 from initialize import *
 
 # policy dataset to train/validate and test on
-# dataset options: P0, P3/4, P5, P11/12, P19, test
+# dataset options: P0, P3, P4, P5, P11, P12, P18, P19 [Note: P5 has unspecified control vars]
 policy = "P4"
 
 
+# where to split training and testing data (has to be exact date in dataset)
+date_split = '2020-01-31'
+
+
 # options (True/False)
-use_filter = False
-optimize_feature_selection = True
-descending_feature_selection = True
-reduced_dataset = False
-weighted_accuracy = False
-reduced_matrices = False
+optimize_feature_selection = True   # Bayesian optimization (default: True)
+descending_feature_selection = True # Start optimization with all features enabled (default: True)
+use_filter = False                  # Filter variables using mutual info regression (default: True)
+reduced_matrices = False            # Speed up computational time (default: True)
+reduced_dataset = False             # Testing. Apply DMDc on reduced dataset (default: True)
+weighted_accuracy = False           # Testing. Apply weights to objective function. Prioritize areas with high control change (default: True)
 
 
 # hyperparameters
-n_ensemble = 5
-n_folds = 3
-k_best = 300
-penalty = 0
-n_trials = 500
-interpolate = None # 'D' (daily), 'ME' (monthly), None (annual)
-interpolate_method = 'linear' # 'linear', 'cubic', 'akima', etc.
-score_func = 'NSE' # 'NSE', 'RMSE', 'MAE', 'MAPE'
-nc = 15 # 5 or 15 or 30 (for P19 only)
+n_ensemble = 30                     # no. of optimizations to average (default: 30)
+n_trials = 200                      # no. of trials per optimization (default: 200)
+penalty = 0                         # penalize large no. of features in optimization (default: 0)
+n_folds = 3                         # no. of cross-validation folds (default: 3)
+k_best = 500                        # no. of variables to filter with mutual info regression (default: 500)
 
 
-# where to split training and testing data
-date_split = '2019-12-31'
+interpolate = 'ME'                  # 'D' (daily), 'ME' (monthly), None (annual)
+interpolate_method = 'linear'       # 'linear', 'cubic', 'akima', etc.
+score_func = 'NSE'                  # 'NSE', 'RMSE', 'MAE', 'MAPE' (RMSE/MAE/MAPE currently deprecated)
+nc = 15                             # no. of control variables: 5 or 15 (or 30 for P19)
 
- 
-# DMDc svd-ranks to try out
-# (r_min has to be 1 if descending_feature_selection=False) (rtilde should >= r)
-r_min, r_max = 5,15
-rtilde_min, rtilde_max = r_min, r_max
+
+r_min, r_max = 5, 15                    # svd-ranks for input matrix to try out (default: 5, 15)
+rtilde_min, rtilde_max = r_min, r_max   # svd-ranks for response matrix (default: r_min, r_max)
+# note: r_min has to be 1 if descending_feature_selection=False
 
 
 # %% ------------------------- DATA-PREPROCESSING ------------------------ %% #
@@ -54,7 +55,7 @@ m, n_total = data.shape
 
 # the control variables for each policy are specified in a separate file:
 control_names, important_names, geo_vars, all_feature_names = specify_control_vars(
-    policy, reduced_dataset, all_feature_names, nc)
+    policy, policy_test, reduced_dataset, all_feature_names, nc)
 
 
 # duplicate variables in dataset can cause issues
@@ -80,8 +81,8 @@ data = data.set_index('date')
 
 
 
-# The SDM outputs data at annual resolution constant-interpolated to monthly.
-# So here we resample it back to annual data
+# SDM outputs data at annual resolution constant-interpolated to monthly. So
+# here we resample it back to annual data
 if policy != "test":
     data = data.resample('YE').first()
 

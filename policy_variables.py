@@ -1,12 +1,13 @@
 import random
 
-def specify_control_vars(policy_train, reduced_dataset, all_feature_names, nc):
+def specify_control_vars(policy_train, policy_test, reduced_dataset, all_feature_names, nc):
 
     # specify control variables, important variables (to visualize)
     match policy_train:
 
 
-
+        case 'P0':
+            return specify_control_vars(policy_test, policy_train, reduced_dataset, all_feature_names, nc)
 
 
         case "P3" | "P4":
@@ -86,7 +87,7 @@ def specify_control_vars(policy_train, reduced_dataset, all_feature_names, nc):
             
             important_names = [name for i,name in enumerate(important_names) if i in [0,3,4]]
 
-
+            geo_vars = []
 
 
 
@@ -249,8 +250,6 @@ def specify_control_vars(policy_train, reduced_dataset, all_feature_names, nc):
                 for name in control_names + important_names:
                     if name not in keep_vars:
                         keep_vars.append(name)
-
-
 
 
 
